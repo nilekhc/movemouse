@@ -1,5 +1,5 @@
 # movemouse
-Programmatically move mouse cursor on screen
+Programmatically move mouse pointer on the screen
 
 ## Usage
 
