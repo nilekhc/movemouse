@@ -30,6 +30,6 @@ func main() {
 
 		robotgo.Move(x, y)
 
-		time.Sleep(5 * time.Second)
+		time.Sleep(30 * time.Second)
 	}
 }
