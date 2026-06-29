@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"math/rand"
 	"os/signal"
 	"syscall"
@@ -46,20 +45,32 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
+	startedAt := time.Now()
 	timer := time.AfterFunc(*stopIn, cancel)
 	defer timer.Stop()
 
 	ticker := time.NewTicker(*interval)
 	defer ticker.Stop()
 
+	// dashTicker drives the 1s redraw cadence for the status panel. it is
+	// independent of the nudge ticker so the progress bar and countdown
+	// stay responsive regardless of -interval.
+	dashTicker := time.NewTicker(time.Second)
+	defer dashTicker.Stop()
+
 	x, y := robotgo.Location()
 	lastKnown := Point{X: x, Y: y}
+
+	dash := newDashboard(startedAt, *stopIn)
+	dash.start()
 
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Printf("stopping at %v\n", time.Now())
+			dash.done(time.Now())
 			return
+		case <-dashTicker.C:
+			dash.render(time.Now())
 		case <-ticker.C:
 			cx, cy := robotgo.Location()
 			current := Point{X: cx, Y: cy}
